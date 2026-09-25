@@ -1,5 +1,5 @@
 namespace EmployeeManagementPayrollSystem.Models;
-
+using EmployeeManagementPayrollSystem.Enums;
 public class User
 {
     public int Id { get; set; }
@@ -10,5 +10,5 @@ public class User
 
     public string PasswordHash { get; set; } = string.Empty;
 
-    public string Role { get; set; } = "EMPLOYEE";
+    public UserRole Role { get; set; } = UserRole.EMPLOYEE;
 }
