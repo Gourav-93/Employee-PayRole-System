@@ -126,4 +126,82 @@ public class AttendanceController : ControllerBase
 
         return Ok("Attendance deleted successfully.");
     }
+
+    [HttpGet("today")]
+    [Authorize]
+    public async Task<IActionResult> GetTodayAttendance()
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+
+        if (string.IsNullOrEmpty(email))
+            return Unauthorized("Email claim not found.");
+
+        var employee = await _employeeService.GetByEmailAsync(email);
+
+        if (employee == null)
+            return NotFound("Employee profile not found.");
+
+        var attendance = await _service.GetByEmployeeAndDateAsync(employee.Id, DateTime.Today);
+
+        if (attendance == null)
+            return Ok(null); // Return empty so frontend knows it's not marked
+
+        return Ok(attendance);
+    }
+
+    [HttpPost("check-in")]
+    [Authorize]
+    public async Task<IActionResult> CheckIn()
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+
+        if (string.IsNullOrEmpty(email))
+            return Unauthorized("Email claim not found.");
+
+        var employee = await _employeeService.GetByEmailAsync(email);
+
+        if (employee == null)
+            return NotFound("Employee profile not found.");
+
+        var existing = await _service.GetByEmployeeAndDateAsync(employee.Id, DateTime.Today);
+        if (existing != null)
+            return BadRequest(new { message = "Attendance already marked for today." });
+
+        var attendance = new Attendance
+        {
+            EmployeeId = employee.Id,
+            Date = DateTime.Today,
+            CheckIn = DateTime.Now.TimeOfDay,
+            CheckOut = null,
+            Status = AttendanceStatus.Present
+        };
+
+        return Ok(await _service.AddAsync(attendance));
+    }
+
+    [HttpPost("check-out")]
+    [Authorize]
+    public async Task<IActionResult> CheckOut()
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+
+        if (string.IsNullOrEmpty(email))
+            return Unauthorized("Email claim not found.");
+
+        var employee = await _employeeService.GetByEmailAsync(email);
+
+        if (employee == null)
+            return NotFound("Employee profile not found.");
+
+        var existing = await _service.GetByEmployeeAndDateAsync(employee.Id, DateTime.Today);
+        if (existing == null)
+            return BadRequest(new { message = "Please check in first." });
+
+        if (existing.CheckOut != null)
+            return BadRequest(new { message = "Attendance already checked out." });
+
+        existing.CheckOut = DateTime.Now.TimeOfDay;
+
+        return Ok(await _service.UpdateAsync(existing));
+    }
 }

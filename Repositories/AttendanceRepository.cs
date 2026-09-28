@@ -36,6 +36,12 @@ public class AttendanceRepository : IAttendanceRepository
             .ToListAsync();
     }
 
+    public async Task<Attendance?> GetByEmployeeAndDateAsync(int employeeId, DateTime date)
+    {
+        return await _context.Attendances
+            .FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.Date.Date == date.Date);
+    }
+
     public async Task<Attendance> AddAsync(Attendance attendance)
     {
         _context.Attendances.Add(attendance);

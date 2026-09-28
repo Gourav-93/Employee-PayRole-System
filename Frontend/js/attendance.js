@@ -7,13 +7,77 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (role === 'EMPLOYEE') {
         document.getElementById('pageTitle').textContent = 'My Attendance';
-        document.getElementById('tableTitle').textContent = 'My Attendance Records';
+        document.getElementById('tableTitle').classList.add('hidden');
+        document.getElementById('historyTitle').classList.remove('hidden');
+        document.getElementById('employeeAttendanceSection').classList.remove('hidden');
+        await loadTodayAttendance();
     } else {
         await loadEmployees();
     }
     
     loadAttendance();
 });
+
+async function loadTodayAttendance() {
+    const statusDiv = document.getElementById('todayAttStatus');
+    const btnIn = document.getElementById('btnCheckIn');
+    const btnOut = document.getElementById('btnCheckOut');
+    
+    btnIn.classList.add('hidden');
+    btnOut.classList.add('hidden');
+    
+    try {
+        const today = await api.get('/Attendance/today');
+        
+        if (!today) {
+            statusDiv.innerHTML = '<strong>Status:</strong> Not Marked';
+            btnIn.classList.remove('hidden');
+        } else {
+            let html = `<strong>Status:</strong> <span class="badge ${today.status === 'Present' ? 'badge-success' : 'badge-info'}">${today.status}</span><br>`;
+            html += `<strong style="margin-top:0.5rem;display:inline-block;">Check In:</strong> ${today.checkIn || '-'}<br>`;
+            
+            if (today.checkOut) {
+                html += `<strong>Check Out:</strong> ${today.checkOut}`;
+            } else {
+                btnOut.classList.remove('hidden');
+            }
+            
+            statusDiv.innerHTML = html;
+        }
+    } catch (e) {
+        statusDiv.innerHTML = `<span style="color:var(--danger)">Error loading today's attendance.</span>`;
+    }
+}
+
+async function markAttendance(type) {
+    const btnIn = document.getElementById('btnCheckIn');
+    const btnOut = document.getElementById('btnCheckOut');
+    
+    if (type === 'check-in') {
+        btnIn.disabled = true;
+        btnIn.textContent = 'Wait...';
+    } else {
+        btnOut.disabled = true;
+        btnOut.textContent = 'Wait...';
+    }
+    
+    try {
+        await api.post(`/Attendance/${type}`);
+        showToast(`Successfully ${type.replace('-', ' ')}ed!`);
+        await loadTodayAttendance();
+        await loadAttendance(); // Refresh history
+    } catch (error) {
+        showToast(error.message, 'error');
+    } finally {
+        if (type === 'check-in') {
+            btnIn.disabled = false;
+            btnIn.textContent = 'CHECK IN';
+        } else {
+            btnOut.disabled = false;
+            btnOut.textContent = 'CHECK OUT';
+        }
+    }
+}
 
 async function loadEmployees() {
     try {

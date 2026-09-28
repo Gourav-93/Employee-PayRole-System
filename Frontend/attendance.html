@@ -42,6 +42,19 @@
                     <button class="btn btn-primary admin-only" onclick="openAttModal()">+ Add Attendance</button>
                 </div>
                 
+                <div id="employeeAttendanceSection" class="hidden" style="margin-bottom: 2rem; background: #2a2a2a; padding: 1.5rem; border-radius: 8px;">
+                    <h3 style="margin-top:0;">Today's Attendance</h3>
+                    <div id="todayAttStatus" style="margin-top: 1rem; margin-bottom: 1rem; font-size: 1.1rem;">
+                        Loading today's attendance...
+                    </div>
+                    <div>
+                        <button id="btnCheckIn" class="btn btn-primary hidden" onclick="markAttendance('check-in')">CHECK IN</button>
+                        <button id="btnCheckOut" class="btn btn-warning hidden" onclick="markAttendance('check-out')">CHECK OUT</button>
+                    </div>
+                </div>
+                
+                <h3 id="historyTitle" class="hidden" style="margin-top: 2rem; margin-bottom: 1rem;">Attendance History</h3>
+                
                 <div id="loading" class="text-center mt-3 mb-3">Loading attendance...</div>
                 
                 <table id="attTable" class="hidden">
