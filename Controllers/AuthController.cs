@@ -7,18 +7,21 @@ using Microsoft.AspNetCore.Mvc;
 namespace EmployeeManagementPayrollSystem.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly IJwtService _jwtService;
+    private readonly IEmployeeService _employeeService;
 
     public AuthController(
         IUserService userService,
-        IJwtService jwtService)
+        IJwtService jwtService,
+        IEmployeeService employeeService)
     {
         _userService = userService;
         _jwtService = jwtService;
+        _employeeService = employeeService;
     }
 
     [HttpPost("register")]
@@ -93,5 +96,48 @@ public class AuthController : ControllerBase
             token,
             user = response
         });
+    }
+
+    [HttpPost("register-employee")]
+    public async Task<IActionResult> RegisterEmployee(RegisterEmployeeDto dto)
+    {
+        var existingUser = await _userService.GetByEmailAsync(dto.Email);
+        if (existingUser != null)
+            return BadRequest("Email already registered.");
+
+        var user = new User
+        {
+            Name = dto.Name,
+            Email = dto.Email,
+            PasswordHash = dto.Password,
+            Role = UserRole.EMPLOYEE
+        };
+
+        var createdUser = await _userService.RegisterAsync(user);
+
+        var employee = new Employee
+        {
+            UserId = createdUser.Id,
+            DepartmentId = dto.DepartmentId,
+            EmployeeCode = dto.EmployeeCode,
+            Name = dto.Name,
+            Email = dto.Email,
+            Phone = dto.Phone,
+            Designation = dto.Designation,
+            BasicSalary = dto.BasicSalary,
+            JoiningDate = dto.JoiningDate
+        };
+
+        await _employeeService.AddAsync(employee);
+
+        var response = new UserResponseDto
+        {
+            Id = createdUser.Id,
+            Name = createdUser.Name,
+            Email = createdUser.Email,
+            Role = createdUser.Role.ToString()
+        };
+
+        return Ok(response);
     }
 }

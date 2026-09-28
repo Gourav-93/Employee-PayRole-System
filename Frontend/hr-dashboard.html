@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - HRMS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span>HRMS Portal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" class="active admin-only">Dashboard</a></li>
+            <li><a href="employees.html" class="admin-only">Employees</a></li>
+            <li><a href="departments.html" class="admin-only">Departments</a></li>
+            <li><a href="attendance.html">Attendance</a></li>
+            <li><a href="leaves.html">Leaves</a></li>
+            <li><a href="payroll.html">Payroll</a></li>
+            <li><a href="profile.html">My Profile</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <nav class="top-nav">
+            <h2>HR Dashboard</h2>
+            <div class="user-info">
+                <span id="sidebar-user-name">User Name</span>
+                <span class="user-role-badge" id="sidebar-user-role">ROLE</span>
+            </div>
+        </nav>
+
+        <div class="content-area">
+            <div id="loading" class="text-center">
+                <p>Loading dashboard statistics...</p>
+            </div>
+
+            <div id="dashboard-content" class="hidden">
+                <div class="dashboard-cards">
+                    <div class="stat-card">
+                        <span class="stat-title">Total Employees</span>
+                        <span class="stat-value" id="stat-emp">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Total Departments</span>
+                        <span class="stat-value" id="stat-dept">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Present Today</span>
+                        <span class="stat-value" id="stat-present">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Absent Today</span>
+                        <span class="stat-value" id="stat-absent">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Pending Leaves</span>
+                        <span class="stat-value" id="stat-leaves-pending">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Approved Leaves</span>
+                        <span class="stat-value" id="stat-leaves-approved">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Total Payroll Records</span>
+                        <span class="stat-value" id="stat-payroll">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="employee-dashboard-content" class="hidden">
+                <div class="stat-card">
+                    <span class="stat-title">Welcome back</span>
+                    <span class="stat-value">Employee Dashboard</span>
+                    <p class="mt-2">Use the sidebar to view your attendance, leaves, and payroll details.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

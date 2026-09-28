@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll - HRMS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span>HRMS Portal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" class="admin-only">Dashboard</a></li>
+            <li><a href="employees.html" class="admin-only">Employees</a></li>
+            <li><a href="departments.html" class="admin-only">Departments</a></li>
+            <li><a href="attendance.html">Attendance</a></li>
+            <li><a href="leaves.html">Leaves</a></li>
+            <li><a href="payroll.html" class="active">Payroll</a></li>
+            <li><a href="profile.html">My Profile</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <nav class="top-nav">
+            <h2 id="pageTitle">Payroll Management</h2>
+            <div class="user-info">
+                <span id="sidebar-user-name">User Name</span>
+                <span class="user-role-badge" id="sidebar-user-role">ROLE</span>
+            </div>
+        </nav>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-header-actions">
+                    <h3 id="tableTitle">Payroll Records</h3>
+                    <button class="btn btn-primary admin-only" onclick="openPayrollModal()">+ Generate Payroll</button>
+                </div>
+                
+                <div id="loading" class="text-center mt-3 mb-3">Loading payroll...</div>
+                
+                <table id="payrollTable" class="hidden">
+                    <thead>
+                        <tr>
+                            <th class="admin-only">Emp ID</th>
+                            <th>Month/Year</th>
+                            <th>Basic</th>
+                            <th>Allowances</th>
+                            <th>Deductions</th>
+                            <th>Unpaid Leave Ded.</th>
+                            <th>Net Salary</th>
+                            <th class="admin-only">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payrollTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="payrollModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Generate Payroll</h3>
+            <button class="close-modal" onclick="closePayrollModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="payrollForm">
+                <input type="hidden" id="payrollId">
+                <div class="form-group" id="empIdGroup">
+                    <label class="form-label">Employee ID</label>
+                    <input type="number" id="payEmpId" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Month (1-12)</label>
+                    <input type="number" id="payMonth" class="form-control" min="1" max="12" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Year</label>
+                    <input type="number" id="payYear" class="form-control" min="2000" max="2100" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Basic Salary</label>
+                    <input type="number" step="0.01" id="payBasic" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Allowances</label>
+                    <input type="number" step="0.01" id="payAllow" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Deductions</label>
+                    <input type="number" step="0.01" id="payDed" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Unpaid Leave Deduction</label>
+                    <input type="number" step="0.01" id="payUnpaidDed" class="form-control" required>
+                </div>
+                <div class="text-muted mt-2 mb-2" style="font-size:0.875rem">
+                    Note: Net Salary will be calculated by the backend automatically.
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closePayrollModal()">Cancel</button>
+            <button class="btn btn-primary" id="savePayrollBtn" onclick="savePayroll()">Save</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/payroll.js"></script>
+</body>
+</html>

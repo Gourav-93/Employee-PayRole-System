@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - HRMS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span>HRMS Portal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" class="admin-only">Dashboard</a></li>
+            <li><a href="employees.html" class="admin-only">Employees</a></li>
+            <li><a href="departments.html" class="admin-only">Departments</a></li>
+            <li><a href="attendance.html">Attendance</a></li>
+            <li><a href="leaves.html">Leaves</a></li>
+            <li><a href="payroll.html">Payroll</a></li>
+            <li><a href="profile.html" class="active">My Profile</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <nav class="top-nav">
+            <h2>My Profile</h2>
+            <div class="user-info">
+                <span id="sidebar-user-name">User Name</span>
+                <span class="user-role-badge" id="sidebar-user-role">ROLE</span>
+            </div>
+        </nav>
+
+        <div class="content-area">
+            <div class="auth-box" style="margin: 0 auto; max-width: 600px;">
+                <div id="loading" class="text-center">Loading profile...</div>
+                
+                <div id="profile-content" class="hidden">
+                    <div style="text-align:center; margin-bottom: 2rem;">
+                        <div style="width: 80px; height: 80px; background: var(--primary); border-radius: 50%; display:inline-flex; align-items:center; justify-content:center; font-size: 2rem; font-weight:bold; color:white; margin-bottom: 1rem;">
+                            <span id="avatarLetter">U</span>
+                        </div>
+                        <h3 id="profName">Name</h3>
+                        <span class="badge badge-info mt-1" id="profRole">Role</span>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <p class="text-muted" style="font-size:0.875rem">Email Address</p>
+                            <p id="profEmail" style="font-weight:500">-</p>
+                        </div>
+                        <div>
+                            <p class="text-muted" style="font-size:0.875rem">Phone</p>
+                            <p id="profPhone" style="font-weight:500">-</p>
+                        </div>
+                        <div>
+                            <p class="text-muted" style="font-size:0.875rem">Employee Code</p>
+                            <p id="profCode" style="font-weight:500">-</p>
+                        </div>
+                        <div>
+                            <p class="text-muted" style="font-size:0.875rem">Designation</p>
+                            <p id="profDesig" style="font-weight:500">-</p>
+                        </div>
+                        <div>
+                            <p class="text-muted" style="font-size:0.875rem">Department ID</p>
+                            <p id="profDept" style="font-weight:500">-</p>
+                        </div>
+                        <div>
+                            <p class="text-muted" style="font-size:0.875rem">Joining Date</p>
+                            <p id="profJoin" style="font-weight:500">-</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center text-muted mt-3" style="font-size:0.875rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        If any information is incorrect, please contact HR.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

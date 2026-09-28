@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaves - HRMS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span>HRMS Portal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" class="admin-only">Dashboard</a></li>
+            <li><a href="employees.html" class="admin-only">Employees</a></li>
+            <li><a href="departments.html" class="admin-only">Departments</a></li>
+            <li><a href="attendance.html">Attendance</a></li>
+            <li><a href="leaves.html" class="active">Leaves</a></li>
+            <li><a href="payroll.html">Payroll</a></li>
+            <li><a href="profile.html">My Profile</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <nav class="top-nav">
+            <h2 id="pageTitle">Leave Management</h2>
+            <div class="user-info">
+                <span id="sidebar-user-name">User Name</span>
+                <span class="user-role-badge" id="sidebar-user-role">ROLE</span>
+            </div>
+        </nav>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-header-actions">
+                    <h3 id="tableTitle">Leave Requests</h3>
+                    <button class="btn btn-primary emp-only" id="applyLeaveBtn" onclick="openLeaveModal()">Apply Leave</button>
+                </div>
+                
+                <div id="loading" class="text-center mt-3 mb-3">Loading leaves...</div>
+                
+                <table id="leaveTable" class="hidden">
+                    <thead>
+                        <tr>
+                            <th class="admin-only">Employee ID</th>
+                            <th>Leave Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaveTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="leaveModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Apply Leave</h3>
+            <button class="close-modal" onclick="closeLeaveModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="leaveForm">
+                <input type="hidden" id="leaveId">
+                <!-- Employee ID is securely inferred by the backend -->
+                <div class="form-group">
+                    <label class="form-label">Leave Type</label>
+                    <select id="leaveType" class="form-control" required>
+                        <option value="Sick">Sick Leave</option>
+                        <option value="Casual">Casual Leave</option>
+                        <option value="Annual">Annual Leave</option>
+                        <option value="Unpaid">Unpaid Leave</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">From Date</label>
+                    <input type="date" id="leaveFrom" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">To Date</label>
+                    <input type="date" id="leaveTo" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Reason</label>
+                    <textarea id="leaveReason" class="form-control" rows="3" required></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeLeaveModal()">Cancel</button>
+            <button class="btn btn-primary" id="saveLeaveBtn" onclick="saveLeave()">Submit</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/leaves.js"></script>
+</body>
+</html>

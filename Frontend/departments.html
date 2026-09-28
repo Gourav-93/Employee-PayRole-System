@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departments - HRMS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span>HRMS Portal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" class="admin-only">Dashboard</a></li>
+            <li><a href="employees.html" class="admin-only">Employees</a></li>
+            <li><a href="departments.html" class="active admin-only">Departments</a></li>
+            <li><a href="attendance.html">Attendance</a></li>
+            <li><a href="leaves.html">Leaves</a></li>
+            <li><a href="payroll.html">Payroll</a></li>
+            <li><a href="profile.html">My Profile</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <nav class="top-nav">
+            <h2>Departments</h2>
+            <div class="user-info">
+                <span id="sidebar-user-name">User Name</span>
+                <span class="user-role-badge" id="sidebar-user-role">ROLE</span>
+            </div>
+        </nav>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-header-actions">
+                    <h3>All Departments</h3>
+                    <button class="btn btn-primary" onclick="openDeptModal()">+ Add Department</button>
+                </div>
+                
+                <div id="loading" class="text-center mt-3 mb-3">Loading departments...</div>
+                
+                <table id="deptTable" class="hidden">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deptTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="deptModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Add Department</h3>
+            <button class="close-modal" onclick="closeDeptModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="deptForm">
+                <input type="hidden" id="deptId">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" id="deptName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="deptDesc" class="form-control" rows="3"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeDeptModal()">Cancel</button>
+            <button class="btn btn-primary" id="saveDeptBtn" onclick="saveDepartment()">Save</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/departments.js"></script>
+</body>
+</html>

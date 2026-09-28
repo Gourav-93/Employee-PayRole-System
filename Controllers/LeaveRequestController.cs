@@ -66,13 +66,19 @@ public class LeaveRequestController : ControllerBase
     public async Task<IActionResult> Create(
         LeaveRequestCreateDto dto)
     {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        var employee = await _employeeService.GetByEmailAsync(email);
+        
+        if (employee == null)
+            return NotFound("Employee profile not found.");
+
         if (dto.ToDate < dto.FromDate)
             return BadRequest(
                 "To date cannot be before from date.");
 
         var leaveRequest = new LeaveRequest
         {
-            EmployeeId = dto.EmployeeId,
+            EmployeeId = employee.Id,
             LeaveType = dto.LeaveType,
             FromDate = dto.FromDate,
             ToDate = dto.ToDate,
