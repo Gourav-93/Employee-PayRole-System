@@ -12,6 +12,10 @@ public class Attendance
 
     public TimeSpan? CheckOut { get; set; }
 
+    public double? WorkingHours { get; set; }
+
+    public string? Remarks { get; set; }
+
     public AttendanceStatus Status { get; set; } = AttendanceStatus.Present;
 
     // Relationship

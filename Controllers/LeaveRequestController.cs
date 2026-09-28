@@ -46,13 +46,11 @@ public class LeaveRequestController : ControllerBase
     [Authorize(Roles = "EMPLOYEE")]
     public async Task<IActionResult> GetMyLeaves()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+            return Unauthorized("User identity not found.");
 
-        if (string.IsNullOrEmpty(email))
-            return Unauthorized("Email claim not found.");
-
-        var employee = await _employeeService
-            .GetByEmailAsync(email);
+        var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
@@ -66,15 +64,25 @@ public class LeaveRequestController : ControllerBase
     public async Task<IActionResult> Create(
         LeaveRequestCreateDto dto)
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
-        var employee = await _employeeService.GetByEmailAsync(email);
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+            return Unauthorized("User identity not found.");
+
+        var employee = await _employeeService.GetByUserIdAsync(userId);
         
         if (employee == null)
             return NotFound("Employee profile not found.");
 
         if (dto.ToDate < dto.FromDate)
-            return BadRequest(
-                "To date cannot be before from date.");
+            return BadRequest(new { message = "To date cannot be before from date." });
+
+        var existingLeaves = await _service.GetByEmployeeIdAsync(employee.Id);
+        var overlap = existingLeaves.Any(l => l.Status != LeaveStatus.Rejected &&
+                                              l.FromDate.Date <= dto.ToDate.Date &&
+                                              l.ToDate.Date >= dto.FromDate.Date);
+
+        if (overlap)
+            return BadRequest(new { message = "You already have a leave request for these dates." });
 
         var leaveRequest = new LeaveRequest
         {

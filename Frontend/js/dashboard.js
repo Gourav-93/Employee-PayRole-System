@@ -25,7 +25,92 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } else {
         // Employee dashboard view
+        try {
+            // Get user info and basic profile
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                document.getElementById('emp-initials').textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+                document.getElementById('emp-profile-name').textContent = user.name;
+            }
+
+            // Fetch full profile for code, designation, department
+            try {
+                const profile = await api.get('/Employee/me');
+                if (profile) {
+                    document.getElementById('emp-profile-designation').textContent = profile.designation || 'Employee';
+                    document.getElementById('emp-profile-code').textContent = profile.employeeCode || 'N/A';
+                    // We might not have department name populated deeply, fallback to ID if null
+                    document.getElementById('emp-profile-department').textContent = profile.department ? profile.department.name : 'Dept ' + profile.departmentId;
+                }
+            } catch (e) {
+                console.error("Failed to fetch full profile", e);
+            }
+
+            // Fetch today's attendance to set button state
+            await updateDashboardAttendanceState();
+
+        } catch (e) {
+            console.error("Error loading employee dashboard", e);
+        }
+
         loading.classList.add('hidden');
         empContent.classList.remove('hidden');
     }
 });
+
+let todayAttRecord = null;
+
+async function updateDashboardAttendanceState() {
+    try {
+        const todayAtt = await api.get('/Attendance/today');
+        const btn = document.getElementById('btn-quick-checkin');
+        const statusText = document.getElementById('emp-today-time');
+        
+        todayAttRecord = todayAtt;
+
+        if (!todayAtt) {
+            btn.textContent = "Check In Now";
+            btn.className = "btn btn-primary";
+            btn.onclick = () => quickMarkAttendance('check-in');
+            statusText.textContent = "You haven't checked in today.";
+        } else if (!todayAtt.checkOut) {
+            btn.textContent = "Check Out Now";
+            btn.className = "btn btn-warning";
+            btn.onclick = () => quickMarkAttendance('check-out');
+            statusText.textContent = `Checked In: ${todayAtt.checkIn}`;
+        } else {
+            btn.textContent = "Completed";
+            btn.className = "btn btn-success";
+            btn.disabled = true;
+            statusText.textContent = `In: ${todayAtt.checkIn} | Out: ${todayAtt.checkOut}`;
+        }
+    } catch (e) {
+        console.error("Failed to load attendance", e);
+    }
+}
+
+async function quickMarkAttendance(type) {
+    const btn = document.getElementById('btn-quick-checkin');
+    btn.disabled = true;
+    btn.textContent = "Wait...";
+    
+    try {
+        await api.post(`/Attendance/${type}`);
+        showToast(`Successfully ${type.replace('-', ' ')}ed!`);
+        await updateDashboardAttendanceState();
+    } catch (error) {
+        showToast(error.message, 'error');
+        btn.disabled = false;
+        btn.textContent = type === 'check-in' ? "Check In Now" : "Check Out Now";
+    }
+}
+
+function handleCheckIn() {
+    // Handled directly by button onclick, but card is also clickable
+    // We only trigger if the button is not disabled
+    const btn = document.getElementById('btn-quick-checkin');
+    if(!btn.disabled) {
+        btn.click();
+    }
+}

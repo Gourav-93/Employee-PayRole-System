@@ -104,8 +104,8 @@ function openLeaveModal() {
     document.getElementById('leaveForm').reset();
     document.getElementById('leaveId').value = '';
     
-    // Admin shouldn't apply leave, and employee ID is auto-detected by backend
-    document.getElementById('empIdGroup').style.display = 'none';
+    const empIdGroup = document.getElementById('empIdGroup');
+    if (empIdGroup) empIdGroup.style.display = 'none';
     
     document.getElementById('leaveModal').classList.add('active');
 }
@@ -121,7 +121,9 @@ function editLeave(id) {
     
     document.getElementById('modalTitle').textContent = 'Edit Leave';
     document.getElementById('leaveId').value = leave.id;
-    document.getElementById('empIdGroup').style.display = 'none';
+    
+    const empIdGroup = document.getElementById('empIdGroup');
+    if (empIdGroup) empIdGroup.style.display = 'none';
     
     document.getElementById('leaveType').value = leave.leaveType;
     if (leave.fromDate) document.getElementById('leaveFrom').value = leave.fromDate.split('T')[0];

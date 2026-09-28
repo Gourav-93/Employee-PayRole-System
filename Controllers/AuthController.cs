@@ -2,6 +2,7 @@ using EmployeeManagementPayrollSystem.DTOs;
 using EmployeeManagementPayrollSystem.Enums;
 using EmployeeManagementPayrollSystem.Models;
 using EmployeeManagementPayrollSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementPayrollSystem.Controllers;
@@ -41,6 +42,9 @@ public class AuthController : ControllerBase
             return BadRequest("Invalid role.");
         }
 
+        if (role == UserRole.EMPLOYEE)
+            return BadRequest("Please use /register-employee to register an employee.");
+
         var user = new User
         {
             Name = dto.Name,
@@ -57,6 +61,7 @@ public class AuthController : ControllerBase
             Id = createdUser.Id,
             Name = createdUser.Name,
             Email = createdUser.Email,
+            Phone = createdUser.Phone,
             Role = createdUser.Role.ToString()
         };
 
@@ -87,6 +92,7 @@ public class AuthController : ControllerBase
             Id = user.Id,
             Name = user.Name,
             Email = user.Email,
+            Phone = user.Phone,
             Role = user.Role.ToString()
         };
 
@@ -135,9 +141,57 @@ public class AuthController : ControllerBase
             Id = createdUser.Id,
             Name = createdUser.Name,
             Email = createdUser.Email,
+            Phone = createdUser.Phone,
             Role = createdUser.Role.ToString()
         };
 
         return Ok(response);
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetMe()
+    {
+        var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+            return Unauthorized("User identity not found.");
+
+        var user = await _userService.GetByIdAsync(userId);
+        if (user == null) return NotFound("User not found.");
+
+        return Ok(new UserResponseDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Phone = user.Phone,
+            Role = user.Role.ToString()
+        });
+    }
+
+    [HttpPut("me")]
+    [Authorize]
+    public async Task<IActionResult> UpdateMe(UserUpdateProfileDto dto)
+    {
+        var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+            return Unauthorized("User identity not found.");
+
+        var user = await _userService.GetByIdAsync(userId);
+        if (user == null) return NotFound("User not found.");
+
+        user.Name = dto.Name;
+        user.Phone = dto.Phone;
+
+        var updatedUser = await _userService.UpdateAsync(user);
+
+        return Ok(new UserResponseDto
+        {
+            Id = updatedUser.Id,
+            Name = updatedUser.Name,
+            Email = updatedUser.Email,
+            Phone = updatedUser.Phone,
+            Role = updatedUser.Role.ToString()
+        });
     }
 }

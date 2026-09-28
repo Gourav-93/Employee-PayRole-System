@@ -41,13 +41,13 @@ public class EmployeeController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetMyProfile()
     {
-        var email = User.FindFirst(
-            System.Security.Claims.ClaimTypes.Email)?.Value;
+        var userIdString = User.FindFirst(
+            System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        if (string.IsNullOrEmpty(email))
-            return Unauthorized("Email claim not found.");
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+            return Unauthorized("User identity not found.");
 
-        var employee = await _service.GetByEmailAsync(email);
+        var employee = await _service.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");

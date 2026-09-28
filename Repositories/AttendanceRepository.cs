@@ -31,6 +31,7 @@ public class AttendanceRepository : IAttendanceRepository
     public async Task<List<Attendance>> GetByEmployeeIdAsync(int employeeId)
     {
         return await _context.Attendances
+            .Include(a => a.Employee)
             .Where(a => a.EmployeeId == employeeId)
             .OrderByDescending(a => a.Date)
             .ToListAsync();
@@ -39,6 +40,7 @@ public class AttendanceRepository : IAttendanceRepository
     public async Task<Attendance?> GetByEmployeeAndDateAsync(int employeeId, DateTime date)
     {
         return await _context.Attendances
+            .Include(a => a.Employee)
             .FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.Date.Date == date.Date);
     }
 
@@ -62,6 +64,8 @@ public class AttendanceRepository : IAttendanceRepository
         existing.Date = attendance.Date;
         existing.CheckIn = attendance.CheckIn;
         existing.CheckOut = attendance.CheckOut;
+        existing.WorkingHours = attendance.WorkingHours;
+        existing.Remarks = attendance.Remarks;
         existing.Status = attendance.Status;
 
         await _context.SaveChangesAsync();

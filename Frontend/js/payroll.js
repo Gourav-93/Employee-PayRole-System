@@ -8,10 +8,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (role === 'EMPLOYEE') {
         document.getElementById('pageTitle').textContent = 'My Payroll';
         document.getElementById('tableTitle').textContent = 'My Salary History';
+    } else {
+        loadEmployees();
     }
     
     loadPayrolls();
 });
+
+async function loadEmployees() {
+    try {
+        const employeesList = await api.get('/Employee');
+        const select = document.getElementById('payEmpId');
+        employeesList.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e.id;
+            opt.textContent = `${e.employeeCode} - ${e.name}`;
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        console.error("Failed to load employees for payroll", e);
+    }
+}
 
 const getMonthName = (monthNumber) => {
     const date = new Date();
@@ -52,8 +69,10 @@ async function loadPayrolls() {
                     `;
                 }
 
+                const empDisplay = pay.employee ? `${pay.employee.name} (${pay.employee.employeeCode})` : pay.employeeId;
+
                 tr.innerHTML = `
-                    ${role !== 'EMPLOYEE' ? `<td class="admin-only">${pay.employeeId}</td>` : ''}
+                    ${role !== 'EMPLOYEE' ? `<td class="admin-only">${empDisplay}</td>` : ''}
                     <td>${getMonthName(pay.month)} ${pay.year}</td>
                     <td>$${pay.basicSalary.toFixed(2)}</td>
                     <td>$${pay.allowances.toFixed(2)}</td>

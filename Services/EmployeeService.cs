@@ -28,6 +28,11 @@ public class EmployeeService : IEmployeeService
         return await _repository.GetByEmailAsync(email);
     }
 
+    public async Task<Employee?> GetByUserIdAsync(int userId)
+    {
+        return await _repository.GetByUserIdAsync(userId);
+    }
+
     public async Task<Employee> AddAsync(Employee employee)
     {
         return await _repository.AddAsync(employee);

@@ -60,11 +60,13 @@
                 <table id="attTable" class="hidden">
                     <thead>
                         <tr>
-                            <th class="admin-only">Employee ID</th>
+                            <th class="admin-only">Employee</th>
                             <th>Date</th>
                             <th>Check In</th>
                             <th>Check Out</th>
+                            <th>Work Hrs</th>
                             <th>Status</th>
+                            <th>Remarks</th>
                             <th class="admin-only">Actions</th>
                         </tr>
                     </thead>
@@ -112,6 +114,10 @@
                         <option value="HalfDay">HalfDay</option>
                         <option value="Leave">Leave</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Remarks</label>
+                    <textarea id="attRemarks" class="form-control" rows="2"></textarea>
                 </div>
             </form>
         </div>

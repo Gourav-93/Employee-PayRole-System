@@ -35,6 +35,13 @@ public class EmployeeRepository : IEmployeeRepository
             .FirstOrDefaultAsync(e => e.Email == email);
     }
 
+    public async Task<Employee?> GetByUserIdAsync(int userId)
+    {
+        return await _context.Employees
+            .Include(e => e.Department)
+            .FirstOrDefaultAsync(e => e.UserId == userId);
+    }
+
     public async Task<Employee> AddAsync(Employee employee)
     {
         _context.Employees.Add(employee);

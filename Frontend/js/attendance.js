@@ -134,12 +134,23 @@ async function loadAttendance() {
                     `;
                 }
 
+                let empDisplay = '';
+                if (role !== 'EMPLOYEE') {
+                    if (rec.employee) {
+                        empDisplay = `${rec.employee.employeeCode} - ${rec.employee.name}`;
+                    } else {
+                        empDisplay = rec.employeeId;
+                    }
+                }
+
                 tr.innerHTML = `
-                    ${role !== 'EMPLOYEE' ? `<td class="admin-only">${rec.employeeId}</td>` : ''}
+                    ${role !== 'EMPLOYEE' ? `<td class="admin-only">${empDisplay}</td>` : ''}
                     <td>${rec.date ? rec.date.split('T')[0] : '-'}</td>
                     <td>${rec.checkIn || '-'}</td>
                     <td>${rec.checkOut || '-'}</td>
+                    <td>${rec.workingHours ? rec.workingHours : '-'}</td>
                     <td><span class="badge ${badgeClass}">${rec.status}</span></td>
+                    <td>${rec.remarks || '-'}</td>
                     ${actionsHtml}
                 `;
                 tbody.appendChild(tr);
@@ -158,6 +169,7 @@ function openAttModal() {
     document.getElementById('attForm').reset();
     document.getElementById('attId').value = '';
     document.getElementById('empIdGroup').classList.remove('hidden');
+    document.getElementById('attRemarks').value = '';
     document.getElementById('attModal').classList.add('active');
 }
 
@@ -182,6 +194,7 @@ function editAtt(id) {
     document.getElementById('attCheckIn').value = rec.checkIn || '';
     document.getElementById('attCheckOut').value = rec.checkOut || '';
     document.getElementById('attStatus').value = rec.status;
+    document.getElementById('attRemarks').value = rec.remarks || '';
     
     document.getElementById('attModal').classList.add('active');
 }
@@ -193,7 +206,8 @@ async function saveAttendance() {
         date: document.getElementById('attDate').value,
         checkIn: document.getElementById('attCheckIn').value || null,
         checkOut: document.getElementById('attCheckOut').value || null,
-        status: document.getElementById('attStatus').value
+        status: document.getElementById('attStatus').value,
+        remarks: document.getElementById('attRemarks').value
     };
     
     // Add timespan format support if needed. The API expects TimeSpan? (e.g. "09:00:00")

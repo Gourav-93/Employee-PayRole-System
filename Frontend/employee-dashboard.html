@@ -76,10 +76,56 @@
             </div>
             
             <div id="employee-dashboard-content" class="hidden">
-                <div class="stat-card">
-                    <span class="stat-title">Welcome back</span>
-                    <span class="stat-value">Employee Dashboard</span>
-                    <p class="mt-2">Use the sidebar to view your attendance, leaves, and payroll details.</p>
+                <!-- Profile Section -->
+                <div class="profile-banner" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div class="avatar" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #818cf8); display: flex; justify-content: center; align-items: center; font-size: 2.5rem; color: white; font-weight: bold; flex-shrink: 0;" id="emp-initials">
+                        U
+                    </div>
+                    <div class="profile-info">
+                        <h2 style="font-size: 2rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;" id="emp-profile-name">
+                            Loading...
+                        </h2>
+                        <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                            <span id="emp-profile-designation">Designation</span> | <span id="emp-profile-code">EMP-000</span>
+                        </p>
+                        <span class="badge badge-info" id="emp-profile-department" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">Department</span>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Section -->
+                <h3 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Quick Actions</h3>
+                <div class="dashboard-cards" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                    
+                    <!-- Check In Action -->
+                    <div class="stat-card" style="text-align: center; border-top: 4px solid var(--info); cursor: pointer;" onclick="handleCheckIn()">
+                        <div style="background: rgba(59, 130, 246, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 1rem auto;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                        </div>
+                        <h4 style="margin-bottom: 0.5rem;">Mark Attendance</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;" id="emp-today-time">Check In / Check Out</p>
+                        <button class="btn btn-primary" style="width: 100%;" id="btn-quick-checkin">Check In Now</button>
+                    </div>
+
+                    <!-- Apply Leave Action -->
+                    <div class="stat-card" style="text-align: center; border-top: 4px solid var(--warning); cursor: pointer;" onclick="window.location.href='leaves.html'">
+                        <div style="background: rgba(245, 158, 11, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 1rem auto;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        </div>
+                        <h4 style="margin-bottom: 0.5rem;">Apply Leave</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Request time off</p>
+                        <a href="leaves.html" class="btn btn-secondary" style="width: 100%; display: block;">Apply Now</a>
+                    </div>
+
+                    <!-- View Payslip Action -->
+                    <div class="stat-card" style="text-align: center; border-top: 4px solid var(--success); cursor: pointer;" onclick="window.location.href='payroll.html'">
+                        <div style="background: rgba(16, 185, 129, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 1rem auto;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                        </div>
+                        <h4 style="margin-bottom: 0.5rem;">View Payslip</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">View latest salary slip</p>
+                        <a href="payroll.html" class="btn btn-secondary" style="width: 100%; display: block;">View Payslips</a>
+                    </div>
+
                 </div>
             </div>
         </div>

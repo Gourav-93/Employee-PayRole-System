@@ -57,31 +57,61 @@
                             <p class="text-muted" style="font-size:0.875rem">Phone</p>
                             <p id="profPhone" style="font-weight:500">-</p>
                         </div>
-                        <div>
+                        <div class="emp-data">
                             <p class="text-muted" style="font-size:0.875rem">Employee Code</p>
                             <p id="profCode" style="font-weight:500">-</p>
                         </div>
-                        <div>
+                        <div class="emp-data">
                             <p class="text-muted" style="font-size:0.875rem">Designation</p>
                             <p id="profDesig" style="font-weight:500">-</p>
                         </div>
-                        <div>
+                        <div class="emp-data">
                             <p class="text-muted" style="font-size:0.875rem">Department ID</p>
                             <p id="profDept" style="font-weight:500">-</p>
                         </div>
-                        <div>
+                        <div class="emp-data">
                             <p class="text-muted" style="font-size:0.875rem">Joining Date</p>
                             <p id="profJoin" style="font-weight:500">-</p>
                         </div>
                     </div>
                     
-                    <div class="text-center text-muted mt-3" style="font-size:0.875rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <div id="profFooter" class="text-center text-muted mt-3" style="font-size:0.875rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
                         If any information is incorrect, please contact HR.
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button class="btn btn-secondary" onclick="openEditProfileModal()">Edit Profile Details</button>
                     </div>
                 </div>
             </div>
         </div>
     </main>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal" id="editProfileModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Profile</h3>
+            <button class="close-modal" onclick="closeEditProfileModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editProfileForm">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" id="editProfName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" id="editProfPhone" class="form-control">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
+            <button class="btn btn-primary" id="saveProfBtn" onclick="saveProfile()">Save Changes</button>
+        </div>
+    </div>
 </div>
 
 <script src="js/api.js"></script>

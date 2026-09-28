@@ -19,10 +19,20 @@ public class UserService : IUserService
         return await _repository.GetByEmailAsync(email);
     }
 
+    public async Task<User?> GetByIdAsync(int id)
+    {
+        return await _repository.GetByIdAsync(id);
+    }
+
     public async Task<User> RegisterAsync(User user)
     {
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
 
         return await _repository.AddAsync(user);
+    }
+
+    public async Task<User> UpdateAsync(User user)
+    {
+        return await _repository.UpdateAsync(user);
     }
 }

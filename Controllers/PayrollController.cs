@@ -45,13 +45,11 @@ public class PayrollController : ControllerBase
     [Authorize(Roles = "EMPLOYEE")]
     public async Task<IActionResult> GetMyPayroll()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+            return Unauthorized("User identity not found.");
 
-        if (string.IsNullOrEmpty(email))
-            return Unauthorized("Email claim not found.");
-
-        var employee = await _employeeService
-            .GetByEmailAsync(email);
+        var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");

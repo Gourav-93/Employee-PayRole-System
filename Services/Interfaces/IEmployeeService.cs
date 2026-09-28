@@ -6,6 +6,7 @@ public interface IEmployeeService
 {
     Task<List<Employee>> GetAllAsync();
     Task<Employee?> GetByIdAsync(int id);
+    Task<Employee?> GetByUserIdAsync(int userId);
     Task<Employee?> GetByEmailAsync(string email);
     Task<Employee> AddAsync(Employee employee);
     Task<Employee?> UpdateAsync(Employee employee);

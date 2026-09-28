@@ -46,13 +46,11 @@ public class AttendanceController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetMyAttendance()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+            return Unauthorized("User identity not found.");
 
-        if (string.IsNullOrEmpty(email))
-            return Unauthorized("Email claim not found.");
-
-        var employee = await _employeeService
-            .GetByEmailAsync(email);
+        var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
@@ -76,12 +74,20 @@ public class AttendanceController : ControllerBase
             return BadRequest("Invalid attendance status.");
         }
 
+        double? workingHours = dto.WorkingHours;
+        if (!workingHours.HasValue && dto.CheckIn.HasValue && dto.CheckOut.HasValue)
+        {
+            workingHours = (dto.CheckOut.Value - dto.CheckIn.Value).TotalHours;
+        }
+
         var attendance = new Attendance
         {
             EmployeeId = dto.EmployeeId,
             Date = dto.Date,
             CheckIn = dto.CheckIn,
             CheckOut = dto.CheckOut,
+            WorkingHours = Math.Round(workingHours ?? 0, 2) > 0 ? Math.Round(workingHours ?? 0, 2) : null,
+            Remarks = dto.Remarks,
             Status = status
         };
 
@@ -107,9 +113,17 @@ public class AttendanceController : ControllerBase
             return BadRequest("Invalid attendance status.");
         }
 
+        double? workingHours = dto.WorkingHours;
+        if (!workingHours.HasValue && dto.CheckIn.HasValue && dto.CheckOut.HasValue)
+        {
+            workingHours = (dto.CheckOut.Value - dto.CheckIn.Value).TotalHours;
+        }
+
         existing.Date = dto.Date;
         existing.CheckIn = dto.CheckIn;
         existing.CheckOut = dto.CheckOut;
+        existing.WorkingHours = Math.Round(workingHours ?? 0, 2) > 0 ? Math.Round(workingHours ?? 0, 2) : null;
+        existing.Remarks = dto.Remarks;
         existing.Status = status;
 
         return Ok(await _service.UpdateAsync(existing));
@@ -131,12 +145,11 @@ public class AttendanceController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetTodayAttendance()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+            return Unauthorized("User identity not found.");
 
-        if (string.IsNullOrEmpty(email))
-            return Unauthorized("Email claim not found.");
-
-        var employee = await _employeeService.GetByEmailAsync(email);
+        var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
@@ -153,12 +166,11 @@ public class AttendanceController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CheckIn()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+            return Unauthorized("User identity not found.");
 
-        if (string.IsNullOrEmpty(email))
-            return Unauthorized("Email claim not found.");
-
-        var employee = await _employeeService.GetByEmailAsync(email);
+        var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
@@ -183,12 +195,11 @@ public class AttendanceController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CheckOut()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
+            return Unauthorized("User identity not found.");
 
-        if (string.IsNullOrEmpty(email))
-            return Unauthorized("Email claim not found.");
-
-        var employee = await _employeeService.GetByEmailAsync(email);
+        var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
@@ -201,6 +212,10 @@ public class AttendanceController : ControllerBase
             return BadRequest(new { message = "Attendance already checked out." });
 
         existing.CheckOut = DateTime.Now.TimeOfDay;
+        if (existing.CheckIn.HasValue)
+        {
+            existing.WorkingHours = Math.Round((existing.CheckOut.Value - existing.CheckIn.Value).TotalHours, 2);
+        }
 
         return Ok(await _service.UpdateAsync(existing));
     }

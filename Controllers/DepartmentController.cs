@@ -39,8 +39,7 @@ public class DepartmentController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(
-        DepartmentCreateDto dto)
+    public async Task<IActionResult> Create(DepartmentCreateDto dto)
     {
         var department = new Department
         {
