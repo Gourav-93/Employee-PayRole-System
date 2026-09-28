@@ -28,6 +28,14 @@ public class AttendanceRepository : IAttendanceRepository
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
+    public async Task<List<Attendance>> GetByEmployeeIdAsync(int employeeId)
+    {
+        return await _context.Attendances
+            .Where(a => a.EmployeeId == employeeId)
+            .OrderByDescending(a => a.Date)
+            .ToListAsync();
+    }
+
     public async Task<Attendance> AddAsync(Attendance attendance)
     {
         _context.Attendances.Add(attendance);
@@ -38,7 +46,8 @@ public class AttendanceRepository : IAttendanceRepository
 
     public async Task<Attendance?> UpdateAsync(Attendance attendance)
     {
-        var existing = await _context.Attendances.FindAsync(attendance.Id);
+        var existing = await _context.Attendances
+            .FindAsync(attendance.Id);
 
         if (existing == null)
             return null;

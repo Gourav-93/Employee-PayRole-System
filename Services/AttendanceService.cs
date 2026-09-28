@@ -23,6 +23,11 @@ public class AttendanceService : IAttendanceService
         return await _repository.GetByIdAsync(id);
     }
 
+    public async Task<List<Attendance>> GetByEmployeeIdAsync(int employeeId)
+    {
+        return await _repository.GetByEmployeeIdAsync(employeeId);
+    }
+
     public async Task<Attendance> AddAsync(Attendance attendance)
     {
         return await _repository.AddAsync(attendance);

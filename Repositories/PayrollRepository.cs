@@ -18,6 +18,8 @@ public class PayrollRepository : IPayrollRepository
     {
         return await _context.Payrolls
             .Include(p => p.Employee)
+            .OrderByDescending(p => p.Year)
+            .ThenByDescending(p => p.Month)
             .ToListAsync();
     }
 
@@ -28,9 +30,20 @@ public class PayrollRepository : IPayrollRepository
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
+    public async Task<List<Payroll>> GetByEmployeeIdAsync(
+        int employeeId)
+    {
+        return await _context.Payrolls
+            .Where(p => p.EmployeeId == employeeId)
+            .OrderByDescending(p => p.Year)
+            .ThenByDescending(p => p.Month)
+            .ToListAsync();
+    }
+
     public async Task<Payroll> AddAsync(Payroll payroll)
     {
         _context.Payrolls.Add(payroll);
+
         await _context.SaveChangesAsync();
 
         return payroll;
@@ -38,7 +51,8 @@ public class PayrollRepository : IPayrollRepository
 
     public async Task<Payroll?> UpdateAsync(Payroll payroll)
     {
-        var existing = await _context.Payrolls.FindAsync(payroll.Id);
+        var existing = await _context.Payrolls
+            .FindAsync(payroll.Id);
 
         if (existing == null)
             return null;
@@ -49,7 +63,8 @@ public class PayrollRepository : IPayrollRepository
         existing.BasicSalary = payroll.BasicSalary;
         existing.Allowances = payroll.Allowances;
         existing.Deductions = payroll.Deductions;
-        existing.UnpaidLeaveDeduction = payroll.UnpaidLeaveDeduction;
+        existing.UnpaidLeaveDeduction =
+            payroll.UnpaidLeaveDeduction;
         existing.NetSalary = payroll.NetSalary;
         existing.GeneratedDate = payroll.GeneratedDate;
 
@@ -60,12 +75,14 @@ public class PayrollRepository : IPayrollRepository
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var payroll = await _context.Payrolls.FindAsync(id);
+        var payroll = await _context.Payrolls
+            .FindAsync(id);
 
         if (payroll == null)
             return false;
 
         _context.Payrolls.Remove(payroll);
+
         await _context.SaveChangesAsync();
 
         return true;

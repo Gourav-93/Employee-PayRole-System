@@ -28,6 +28,14 @@ public class LeaveRequestRepository : ILeaveRequestRepository
             .FirstOrDefaultAsync(l => l.Id == id);
     }
 
+    public async Task<List<LeaveRequest>> GetByEmployeeIdAsync(int employeeId)
+    {
+        return await _context.LeaveRequests
+            .Where(l => l.EmployeeId == employeeId)
+            .OrderByDescending(l => l.FromDate)
+            .ToListAsync();
+    }
+
     public async Task<LeaveRequest> AddAsync(LeaveRequest leaveRequest)
     {
         _context.LeaveRequests.Add(leaveRequest);
@@ -36,7 +44,8 @@ public class LeaveRequestRepository : ILeaveRequestRepository
         return leaveRequest;
     }
 
-    public async Task<LeaveRequest?> UpdateAsync(LeaveRequest leaveRequest)
+    public async Task<LeaveRequest?> UpdateAsync(
+        LeaveRequest leaveRequest)
     {
         var existing = await _context.LeaveRequests
             .FindAsync(leaveRequest.Id);

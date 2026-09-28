@@ -1,11 +1,14 @@
+using EmployeeManagementPayrollSystem.DTOs;
 using EmployeeManagementPayrollSystem.Models;
 using EmployeeManagementPayrollSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementPayrollSystem.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "ADMIN,HR")]
 public class DepartmentController : ControllerBase
 {
     private readonly IDepartmentService _service;
@@ -15,15 +18,14 @@ public class DepartmentController : ControllerBase
         _service = service;
     }
 
-    // GET: api/Department
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var departments = await _service.GetAllAsync();
+
         return Ok(departments);
     }
 
-    // GET: api/Department/1
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -35,31 +37,42 @@ public class DepartmentController : ControllerBase
         return Ok(department);
     }
 
-    // POST: api/Department
     [HttpPost]
-    public async Task<IActionResult> Create(Department department)
+    public async Task<IActionResult> Create(
+        DepartmentCreateDto dto)
     {
-        var createdDepartment = await _service.AddAsync(department);
+        var department = new Department
+        {
+            Name = dto.Name,
+            Description = dto.Description
+        };
+
+        var createdDepartment =
+            await _service.AddAsync(department);
 
         return Ok(createdDepartment);
     }
 
-    // PUT: api/Department/1
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, Department department)
+    public async Task<IActionResult> Update(
+        int id,
+        DepartmentUpdateDto dto)
     {
-        if (id != department.Id)
-            return BadRequest("Department ID mismatch.");
+        var existingDepartment =
+            await _service.GetByIdAsync(id);
 
-        var updatedDepartment = await _service.UpdateAsync(department);
-
-        if (updatedDepartment == null)
+        if (existingDepartment == null)
             return NotFound("Department not found.");
+
+        existingDepartment.Name = dto.Name;
+        existingDepartment.Description = dto.Description;
+
+        var updatedDepartment =
+            await _service.UpdateAsync(existingDepartment);
 
         return Ok(updatedDepartment);
     }
 
-    // DELETE: api/Department/1
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

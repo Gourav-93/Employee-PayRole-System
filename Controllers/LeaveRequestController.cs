@@ -1,5 +1,9 @@
+using System.Security.Claims;
+using EmployeeManagementPayrollSystem.DTOs;
+using EmployeeManagementPayrollSystem.Enums;
 using EmployeeManagementPayrollSystem.Models;
 using EmployeeManagementPayrollSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementPayrollSystem.Controllers;
@@ -9,23 +13,25 @@ namespace EmployeeManagementPayrollSystem.Controllers;
 public class LeaveRequestController : ControllerBase
 {
     private readonly ILeaveRequestService _service;
+    private readonly IEmployeeService _employeeService;
 
-    public LeaveRequestController(ILeaveRequestService service)
+    public LeaveRequestController(
+        ILeaveRequestService service,
+        IEmployeeService employeeService)
     {
         _service = service;
+        _employeeService = employeeService;
     }
 
-    // GET: api/LeaveRequest
     [HttpGet]
+    [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetAll()
     {
-        var leaves = await _service.GetAllAsync();
-
-        return Ok(leaves);
+        return Ok(await _service.GetAllAsync());
     }
 
-    // GET: api/LeaveRequest/1
     [HttpGet("{id}")]
+    [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetById(int id)
     {
         var leave = await _service.GetByIdAsync(id);
@@ -36,34 +42,68 @@ public class LeaveRequestController : ControllerBase
         return Ok(leave);
     }
 
-    // POST: api/LeaveRequest
-    [HttpPost]
-    public async Task<IActionResult> Create(LeaveRequest leaveRequest)
+    [HttpGet("me")]
+    [Authorize(Roles = "EMPLOYEE")]
+    public async Task<IActionResult> GetMyLeaves()
     {
-        var createdLeave = await _service.AddAsync(leaveRequest);
+        var email = User.FindFirstValue(ClaimTypes.Email);
 
-        return Ok(createdLeave);
+        if (string.IsNullOrEmpty(email))
+            return Unauthorized("Email claim not found.");
+
+        var employee = await _employeeService
+            .GetByEmailAsync(email);
+
+        if (employee == null)
+            return NotFound("Employee profile not found.");
+
+        return Ok(await _service
+            .GetByEmployeeIdAsync(employee.Id));
     }
 
-    // PUT: api/LeaveRequest/1
+    [HttpPost]
+    [Authorize(Roles = "EMPLOYEE")]
+    public async Task<IActionResult> Create(
+        LeaveRequestCreateDto dto)
+    {
+        if (dto.ToDate < dto.FromDate)
+            return BadRequest(
+                "To date cannot be before from date.");
+
+        var leaveRequest = new LeaveRequest
+        {
+            EmployeeId = dto.EmployeeId,
+            LeaveType = dto.LeaveType,
+            FromDate = dto.FromDate,
+            ToDate = dto.ToDate,
+            Reason = dto.Reason,
+            Status = LeaveStatus.Pending
+        };
+
+        return Ok(await _service.AddAsync(leaveRequest));
+    }
+
     [HttpPut("{id}")]
+    [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Update(
         int id,
-        LeaveRequest leaveRequest)
+        LeaveRequestUpdateDto dto)
     {
-        if (id != leaveRequest.Id)
-            return BadRequest("Leave request ID mismatch.");
+        var existing = await _service.GetByIdAsync(id);
 
-        var updatedLeave = await _service.UpdateAsync(leaveRequest);
-
-        if (updatedLeave == null)
+        if (existing == null)
             return NotFound("Leave request not found.");
 
-        return Ok(updatedLeave);
+        existing.LeaveType = dto.LeaveType;
+        existing.FromDate = dto.FromDate;
+        existing.ToDate = dto.ToDate;
+        existing.Reason = dto.Reason;
+
+        return Ok(await _service.UpdateAsync(existing));
     }
 
-    // DELETE: api/LeaveRequest/1
     [HttpDelete("{id}")]
+    [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _service.DeleteAsync(id);
@@ -72,5 +112,37 @@ public class LeaveRequestController : ControllerBase
             return NotFound("Leave request not found.");
 
         return Ok("Leave request deleted successfully.");
+    }
+
+    [HttpPut("{id}/approve")]
+    [Authorize(Roles = "ADMIN,HR")]
+    public async Task<IActionResult> Approve(int id)
+    {
+        var leave = await _service.ApproveAsync(id);
+
+        if (leave == null)
+            return NotFound("Leave request not found.");
+
+        return Ok(new
+        {
+            message = "Leave request approved successfully.",
+            leave
+        });
+    }
+
+    [HttpPut("{id}/reject")]
+    [Authorize(Roles = "ADMIN,HR")]
+    public async Task<IActionResult> Reject(int id)
+    {
+        var leave = await _service.RejectAsync(id);
+
+        if (leave == null)
+            return NotFound("Leave request not found.");
+
+        return Ok(new
+        {
+            message = "Leave request rejected successfully.",
+            leave
+        });
     }
 }

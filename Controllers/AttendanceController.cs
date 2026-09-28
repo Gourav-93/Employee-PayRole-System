@@ -1,5 +1,9 @@
+using System.Security.Claims;
+using EmployeeManagementPayrollSystem.DTOs;
+using EmployeeManagementPayrollSystem.Enums;
 using EmployeeManagementPayrollSystem.Models;
 using EmployeeManagementPayrollSystem.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementPayrollSystem.Controllers;
@@ -9,23 +13,25 @@ namespace EmployeeManagementPayrollSystem.Controllers;
 public class AttendanceController : ControllerBase
 {
     private readonly IAttendanceService _service;
+    private readonly IEmployeeService _employeeService;
 
-    public AttendanceController(IAttendanceService service)
+    public AttendanceController(
+        IAttendanceService service,
+        IEmployeeService employeeService)
     {
         _service = service;
+        _employeeService = employeeService;
     }
 
-    // GET: api/Attendance
     [HttpGet]
+    [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetAll()
     {
-        var attendance = await _service.GetAllAsync();
-
-        return Ok(attendance);
+        return Ok(await _service.GetAllAsync());
     }
 
-    // GET: api/Attendance/1
     [HttpGet("{id}")]
+    [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetById(int id)
     {
         var attendance = await _service.GetByIdAsync(id);
@@ -36,32 +42,81 @@ public class AttendanceController : ControllerBase
         return Ok(attendance);
     }
 
-    // POST: api/Attendance
-    [HttpPost]
-    public async Task<IActionResult> Create(Attendance attendance)
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetMyAttendance()
     {
-        var createdAttendance = await _service.AddAsync(attendance);
+        var email = User.FindFirstValue(ClaimTypes.Email);
 
-        return Ok(createdAttendance);
+        if (string.IsNullOrEmpty(email))
+            return Unauthorized("Email claim not found.");
+
+        var employee = await _employeeService
+            .GetByEmailAsync(email);
+
+        if (employee == null)
+            return NotFound("Employee profile not found.");
+
+        var attendance = await _service
+            .GetByEmployeeIdAsync(employee.Id);
+
+        return Ok(attendance);
     }
 
-    // PUT: api/Attendance/1
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, Attendance attendance)
+    [HttpPost]
+    [Authorize(Roles = "ADMIN,HR")]
+    public async Task<IActionResult> Create(
+        AttendanceCreateDto dto)
     {
-        if (id != attendance.Id)
-            return BadRequest("Attendance ID mismatch.");
+        if (!Enum.TryParse<AttendanceStatus>(
+            dto.Status,
+            true,
+            out var status))
+        {
+            return BadRequest("Invalid attendance status.");
+        }
 
-        var updatedAttendance = await _service.UpdateAsync(attendance);
+        var attendance = new Attendance
+        {
+            EmployeeId = dto.EmployeeId,
+            Date = dto.Date,
+            CheckIn = dto.CheckIn,
+            CheckOut = dto.CheckOut,
+            Status = status
+        };
 
-        if (updatedAttendance == null)
+        return Ok(await _service.AddAsync(attendance));
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "ADMIN,HR")]
+    public async Task<IActionResult> Update(
+        int id,
+        AttendanceUpdateDto dto)
+    {
+        var existing = await _service.GetByIdAsync(id);
+
+        if (existing == null)
             return NotFound("Attendance record not found.");
 
-        return Ok(updatedAttendance);
+        if (!Enum.TryParse<AttendanceStatus>(
+            dto.Status,
+            true,
+            out var status))
+        {
+            return BadRequest("Invalid attendance status.");
+        }
+
+        existing.Date = dto.Date;
+        existing.CheckIn = dto.CheckIn;
+        existing.CheckOut = dto.CheckOut;
+        existing.Status = status;
+
+        return Ok(await _service.UpdateAsync(existing));
     }
 
-    // DELETE: api/Attendance/1
     [HttpDelete("{id}")]
+    [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _service.DeleteAsync(id);

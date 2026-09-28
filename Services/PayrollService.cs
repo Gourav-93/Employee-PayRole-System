@@ -23,6 +23,12 @@ public class PayrollService : IPayrollService
         return await _repository.GetByIdAsync(id);
     }
 
+    public async Task<List<Payroll>> GetByEmployeeIdAsync(
+        int employeeId)
+    {
+        return await _repository.GetByEmployeeIdAsync(employeeId);
+    }
+
     public async Task<Payroll> AddAsync(Payroll payroll)
     {
         payroll.NetSalary =
@@ -30,6 +36,8 @@ public class PayrollService : IPayrollService
             + payroll.Allowances
             - payroll.Deductions
             - payroll.UnpaidLeaveDeduction;
+
+        payroll.GeneratedDate = DateTime.UtcNow;
 
         return await _repository.AddAsync(payroll);
     }

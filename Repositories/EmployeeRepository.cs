@@ -28,10 +28,16 @@ public class EmployeeRepository : IEmployeeRepository
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
+    public async Task<Employee?> GetByEmailAsync(string email)
+    {
+        return await _context.Employees
+            .Include(e => e.Department)
+            .FirstOrDefaultAsync(e => e.Email == email);
+    }
+
     public async Task<Employee> AddAsync(Employee employee)
     {
         _context.Employees.Add(employee);
-
         await _context.SaveChangesAsync();
 
         return employee;
@@ -67,7 +73,6 @@ public class EmployeeRepository : IEmployeeRepository
             return false;
 
         _context.Employees.Remove(employee);
-
         await _context.SaveChangesAsync();
 
         return true;
