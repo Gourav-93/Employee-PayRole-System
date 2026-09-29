@@ -37,11 +37,14 @@ public class AttendanceRepository : IAttendanceRepository
             .ToListAsync();
     }
 
-    public async Task<Attendance?> GetByEmployeeAndDateAsync(int employeeId, DateTime date)
+    public async Task<Attendance?> GetByEmployeeAndDateAsync(
+        int employeeId, DateTime date)
     {
         return await _context.Attendances
             .Include(a => a.Employee)
-            .FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.Date.Date == date.Date);
+            .FirstOrDefaultAsync(a =>
+                a.EmployeeId == employeeId &&
+                a.Date.Date == date.Date);
     }
 
     public async Task<Attendance> AddAsync(Attendance attendance)
@@ -54,8 +57,7 @@ public class AttendanceRepository : IAttendanceRepository
 
     public async Task<Attendance?> UpdateAsync(Attendance attendance)
     {
-        var existing = await _context.Attendances
-            .FindAsync(attendance.Id);
+        var existing = await _context.Attendances.FindAsync(attendance.Id);
 
         if (existing == null)
             return null;

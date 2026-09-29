@@ -18,8 +18,7 @@ public class JwtService : IJwtService
 
     public string GenerateToken(User user)
     {
-        var key = _configuration["Jwt:Key"]
-                  ?? throw new InvalidOperationException("JWT Key is missing.");
+        var key = _configuration["Jwt:Key"];
 
         var claims = new[]
         {

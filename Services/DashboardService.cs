@@ -23,11 +23,9 @@ public class DashboardService : IDashboardService
         {
             TotalEmployees = await _context.Employees.CountAsync(),
 
-            TotalDepartments =
-                await _context.Departments.CountAsync(),
+            TotalDepartments = await _context.Departments.CountAsync(),
 
-            PresentToday =
-                await _context.Attendances
+            PresentToday = await _context.Attendances
                     .CountAsync(a =>
                         a.Date.Date == today &&
                         a.Status == AttendanceStatus.Present),
