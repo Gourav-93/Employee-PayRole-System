@@ -84,28 +84,6 @@ builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
-// using (var scope = app.Services.CreateScope())
-// {
-//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     try
-//     {
-//         if (!context.Departments.Any())
-//         {
-//             context.Departments.AddRange(
-//                 new EmployeeManagementPayrollSystem.Models.Department { Name = "IT", Description = "Information Technology" },
-//                 new EmployeeManagementPayrollSystem.Models.Department { Name = "HR", Description = "Human Resources" },
-//                 new EmployeeManagementPayrollSystem.Models.Department { Name = "Engineering", Description = "Engineering & Development" },
-//                 new EmployeeManagementPayrollSystem.Models.Department { Name = "Finance", Description = "Finance & Accounts" }
-//             );
-//             context.SaveChanges();
-//         }
-//     }
-//     catch (Exception ex)
-//     {
-//         Console.WriteLine($"Could not seed departments: {ex.Message}");
-//     }
-// }
-
 app.UseGlobalExceptionHandling();
 
 app.UseHttpsRedirection();

@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const content = document.getElementById('profile-content');
     
     try {
-        const emp = await api.get('/Employee/me');
+        const emp = await api.get('/employee/my-profile');
         
         document.getElementById('avatarLetter').textContent = emp.name ? emp.name.charAt(0).toUpperCase() : 'U';
         document.getElementById('profName').textContent = emp.name;
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Try fetching full User details (which now includes Phone) to display
             try {
-                const meUser = await api.get('/auth/me');
+                const meUser = await api.get('/auth/my-profile');
                 if (meUser) {
                     document.getElementById('profPhone').textContent = meUser.phone || '-';
                     // Update user in local storage to keep sync

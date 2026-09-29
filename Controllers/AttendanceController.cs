@@ -23,6 +23,7 @@ public class AttendanceController : ControllerBase
         _employeeService = employeeService;
     }
 
+    // Get all employee attendance 
     [HttpGet]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetAll()
@@ -30,6 +31,7 @@ public class AttendanceController : ControllerBase
         return Ok(await _service.GetAllAsync());
     }
 
+    // Get attendance by ID
     [HttpGet("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetById(int id)
@@ -42,7 +44,8 @@ public class AttendanceController : ControllerBase
         return Ok(attendance);
     }
 
-    [HttpGet("me")]
+    // Get logged-in employee attendance -- its self
+    [HttpGet("my-attendance")]
     [Authorize]
     public async Task<IActionResult> GetMyAttendance()
     {
@@ -58,6 +61,7 @@ public class AttendanceController : ControllerBase
         return Ok(attendance);
     }
 
+    // Create attendance
     [HttpPost]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Create(
@@ -200,3 +204,5 @@ public class AttendanceController : ControllerBase
         return Ok(await _service.UpdateAsync(attendance));
     }
 }
+
+

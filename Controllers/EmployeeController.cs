@@ -41,7 +41,7 @@ public class EmployeeController : ControllerBase
     }
 
 
-    // Get logged-in employee profile
+    // employee profile
     [HttpGet("my-profile")]
     [Authorize]
     public async Task<IActionResult> GetMyProfile()

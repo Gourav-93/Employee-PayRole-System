@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Fetch full profile for code, designation, department
             try {
-                const profile = await api.get('/Employee/me');
+                const profile = await api.get('/employee/my-profile');
                 if (profile) {
                     document.getElementById('emp-profile-designation').textContent = profile.designation || 'Employee';
                     document.getElementById('emp-profile-code').textContent = profile.employeeCode || 'N/A';

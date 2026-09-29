@@ -159,33 +159,4 @@ public class AuthController : ControllerBase
             Role = user.Role.ToString()
         });
     }
-
-
-    // Update Logged-in User
-    [HttpPut("me")]
-    [Authorize]
-    public async Task<IActionResult> UpdateMe(UserUpdateProfileDto dto)
-    {
-        var userId = int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-        var user = await _userService.GetByIdAsync(userId);
-
-        if (user == null)
-            return NotFound("User not found.");
-
-        user.Name = dto.Name;
-        user.Phone = dto.Phone;
-
-        var updatedUser = await _userService.UpdateAsync(user);
-
-        return Ok(new UserResponseDto
-        {
-            Id = updatedUser.Id,
-            Name = updatedUser.Name,
-            Email = updatedUser.Email,
-            Phone = updatedUser.Phone,
-            Role = updatedUser.Role.ToString()
-        });
-    }
 }

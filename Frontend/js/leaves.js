@@ -24,9 +24,9 @@ async function loadLeaves() {
     
     try {
         if (role === 'EMPLOYEE') {
-            leaves = await api.get('/LeaveRequest/me');
+            leaves = await api.get('/leave/my-leaves');
         } else {
-            leaves = await api.get('/LeaveRequest');
+            leaves = await api.get('/leave');
         }
         
         tbody.innerHTML = '';
@@ -159,10 +159,10 @@ async function saveLeave() {
     
     try {
         if (id) {
-            await api.put(`/LeaveRequest/${id}`, payload);
+            await api.put(`/leave/${id}`, payload);
             showToast('Leave request updated successfully');
         } else {
-            await api.post('/LeaveRequest', payload);
+            await api.post('/leave', payload);
             showToast('Leave requested successfully');
         }
         closeLeaveModal();
@@ -178,7 +178,7 @@ async function saveLeave() {
 async function approveLeave(id) {
     if (!confirm('Approve this leave request?')) return;
     try {
-        await api.put(`/LeaveRequest/${id}/approve`, {});
+        await api.put(`/leave/${id}/approve`, {});
         showToast('Leave approved');
         loadLeaves();
     } catch (error) {
@@ -189,7 +189,7 @@ async function approveLeave(id) {
 async function rejectLeave(id) {
     if (!confirm('Reject this leave request?')) return;
     try {
-        await api.put(`/LeaveRequest/${id}/reject`, {});
+        await api.put(`/leave/${id}/reject`, {});
         showToast('Leave rejected');
         loadLeaves();
     } catch (error) {
@@ -200,7 +200,7 @@ async function rejectLeave(id) {
 async function deleteLeave(id) {
     if (!confirm('Are you sure you want to delete this record?')) return;
     try {
-        await api.delete(`/LeaveRequest/${id}`);
+        await api.delete(`/leave/${id}`);
         showToast('Leave record deleted');
         loadLeaves();
     } catch (error) {

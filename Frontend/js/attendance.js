@@ -102,7 +102,7 @@ async function loadAttendance() {
     
     try {
         if (role === 'EMPLOYEE') {
-            records = await api.get('/Attendance/me');
+            records = await api.get('/Attendance/my-attendance');
         } else {
             records = await api.get('/Attendance');
         }

@@ -43,7 +43,7 @@ async function loadPayrolls() {
     
     try {
         if (role === 'EMPLOYEE') {
-            payrolls = await api.get('/Payroll/me');
+            payrolls = await api.get('/Payroll/my-payroll');
         } else {
             payrolls = await api.get('/Payroll');
         }
