@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EmployeeManagementPayrollSystem.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/leave")]
 public class LeaveRequestController : ControllerBase
 {
     private readonly ILeaveRequestService _service;
@@ -23,6 +23,7 @@ public class LeaveRequestController : ControllerBase
         _employeeService = employeeService;
     }
 
+    // Get all leaves
     [HttpGet]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetAll()
@@ -30,6 +31,8 @@ public class LeaveRequestController : ControllerBase
         return Ok(await _service.GetAllAsync());
     }
 
+
+    // Get leave by ID
     [HttpGet("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetById(int id)
@@ -42,49 +45,47 @@ public class LeaveRequestController : ControllerBase
         return Ok(leave);
     }
 
-    [HttpGet("me")]
+
+    // Employee's own leaves
+    [HttpGet("my-leaves")]
     [Authorize(Roles = "EMPLOYEE")]
     public async Task<IActionResult> GetMyLeaves()
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-            return Unauthorized("User identity not found.");
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
 
-        return Ok(await _service
-            .GetByEmployeeIdAsync(employee.Id));
+        return Ok(await _service.GetByEmployeeIdAsync(employee.Id));
     }
 
+
+    // Apply for leave
     [HttpPost]
     [Authorize(Roles = "EMPLOYEE")]
-    public async Task<IActionResult> Create(
-        LeaveRequestCreateDto dto)
+    public async Task<IActionResult> Create(LeaveRequestCreateDto dto)
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-            return Unauthorized("User identity not found.");
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var employee = await _employeeService.GetByUserIdAsync(userId);
-        
-        if (employee == null)
-            return NotFound("Employee profile not found.");
 
         if (dto.ToDate < dto.FromDate)
-            return BadRequest(new { message = "To date cannot be before from date." });
+            return BadRequest("To date cannot be before from date.");
 
-        var existingLeaves = await _service.GetByEmployeeIdAsync(employee.Id);
-        var overlap = existingLeaves.Any(l => l.Status != LeaveStatus.Rejected &&
-                                              l.FromDate.Date <= dto.ToDate.Date &&
-                                              l.ToDate.Date >= dto.FromDate.Date);
+        var leaves = await _service.GetByEmployeeIdAsync(employee.Id);
+
+        var overlap = leaves.Any(l =>
+            l.Status != LeaveStatus.Rejected &&
+            l.FromDate.Date <= dto.ToDate.Date &&
+            l.ToDate.Date >= dto.FromDate.Date);
 
         if (overlap)
-            return BadRequest(new { message = "You already have a leave request for these dates." });
+            return BadRequest("You already have a leave request for these dates.");
 
-        var leaveRequest = new LeaveRequest
+        var leave = new LeaveRequest
         {
             EmployeeId = employee.Id,
             LeaveType = dto.LeaveType,
@@ -94,40 +95,44 @@ public class LeaveRequestController : ControllerBase
             Status = LeaveStatus.Pending
         };
 
-        return Ok(await _service.AddAsync(leaveRequest));
+        return Ok(await _service.AddAsync(leave));
     }
 
+
+    // Update leave
     [HttpPut("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Update(
         int id,
         LeaveRequestUpdateDto dto)
     {
-        var existing = await _service.GetByIdAsync(id);
+        var leave = await _service.GetByIdAsync(id);
 
-        if (existing == null)
+        if (leave == null)
             return NotFound("Leave request not found.");
 
-        existing.LeaveType = dto.LeaveType;
-        existing.FromDate = dto.FromDate;
-        existing.ToDate = dto.ToDate;
-        existing.Reason = dto.Reason;
+        leave.LeaveType = dto.LeaveType;
+        leave.FromDate = dto.FromDate;
+        leave.ToDate = dto.ToDate;
+        leave.Reason = dto.Reason;
 
-        return Ok(await _service.UpdateAsync(existing));
+        return Ok(await _service.UpdateAsync(leave));
     }
 
+
+    // Delete leave
     [HttpDelete("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Delete(int id)
     {
-        var deleted = await _service.DeleteAsync(id);
-
-        if (!deleted)
+        if (!await _service.DeleteAsync(id))
             return NotFound("Leave request not found.");
 
         return Ok("Leave request deleted successfully.");
     }
 
+
+    // Approve leave
     [HttpPut("{id}/approve")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Approve(int id)
@@ -144,6 +149,8 @@ public class LeaveRequestController : ControllerBase
         });
     }
 
+
+    // Reject leave
     [HttpPut("{id}/reject")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Reject(int id)

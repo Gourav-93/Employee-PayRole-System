@@ -22,6 +22,7 @@ public class PayrollController : ControllerBase
         _employeeService = employeeService;
     }
 
+    // Get all payroll
     [HttpGet]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetAll()
@@ -29,6 +30,8 @@ public class PayrollController : ControllerBase
         return Ok(await _service.GetAllAsync());
     }
 
+
+    // Get payroll by ID
     [HttpGet("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetById(int id)
@@ -41,27 +44,28 @@ public class PayrollController : ControllerBase
         return Ok(payroll);
     }
 
-    [HttpGet("me")]
+
+    // Employee's own payroll
+    [HttpGet("my-payroll")]
     [Authorize(Roles = "EMPLOYEE")]
     public async Task<IActionResult> GetMyPayroll()
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-            return Unauthorized("User identity not found.");
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
 
-        return Ok(await _service
-            .GetByEmployeeIdAsync(employee.Id));
+        return Ok(await _service.GetByEmployeeIdAsync(employee.Id));
     }
 
+
+    // Create payroll
     [HttpPost]
     [Authorize(Roles = "ADMIN,HR")]
-    public async Task<IActionResult> Create(
-        PayrollCreateDto dto)
+    public async Task<IActionResult> Create(PayrollCreateDto dto)
     {
         if (dto.Month < 1 || dto.Month > 12)
             return BadRequest("Month must be between 1 and 12.");
@@ -83,35 +87,36 @@ public class PayrollController : ControllerBase
         return Ok(await _service.AddAsync(payroll));
     }
 
+
+    // Update payroll
     [HttpPut("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Update(
         int id,
         PayrollUpdateDto dto)
     {
-        var existing = await _service.GetByIdAsync(id);
+        var payroll = await _service.GetByIdAsync(id);
 
-        if (existing == null)
+        if (payroll == null)
             return NotFound("Payroll not found.");
 
-        existing.Month = dto.Month;
-        existing.Year = dto.Year;
-        existing.BasicSalary = dto.BasicSalary;
-        existing.Allowances = dto.Allowances;
-        existing.Deductions = dto.Deductions;
-        existing.UnpaidLeaveDeduction =
-            dto.UnpaidLeaveDeduction;
+        payroll.Month = dto.Month;
+        payroll.Year = dto.Year;
+        payroll.BasicSalary = dto.BasicSalary;
+        payroll.Allowances = dto.Allowances;
+        payroll.Deductions = dto.Deductions;
+        payroll.UnpaidLeaveDeduction = dto.UnpaidLeaveDeduction;
 
-        return Ok(await _service.UpdateAsync(existing));
+        return Ok(await _service.UpdateAsync(payroll));
     }
 
+
+    // Delete payroll
     [HttpDelete("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Delete(int id)
     {
-        var deleted = await _service.DeleteAsync(id);
-
-        if (!deleted)
+        if (!await _service.DeleteAsync(id))
             return NotFound("Payroll not found.");
 
         return Ok("Payroll deleted successfully.");

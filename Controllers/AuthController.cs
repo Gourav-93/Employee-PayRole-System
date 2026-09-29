@@ -4,6 +4,7 @@ using EmployeeManagementPayrollSystem.Models;
 using EmployeeManagementPayrollSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EmployeeManagementPayrollSystem.Controllers;
 
@@ -25,25 +26,20 @@ public class AuthController : ControllerBase
         _employeeService = employeeService;
     }
 
+    // Register Admin or HR
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
-        var existingUser =
-            await _userService.GetByEmailAsync(dto.Email);
+        var userExists = await _userService.GetByEmailAsync(dto.Email);
 
-        if (existingUser != null)
+        if (userExists != null)
             return BadRequest("Email already registered.");
 
-        if (!Enum.TryParse<UserRole>(
-            dto.Role,
-            true,
-            out var role))
-        {
+        if (!Enum.TryParse<UserRole>(dto.Role, true, out var role))
             return BadRequest("Invalid role.");
-        }
 
         if (role == UserRole.EMPLOYEE)
-            return BadRequest("Please use /register-employee to register an employee.");
+            return BadRequest("Use register-employee for employees.");
 
         var user = new User
         {
@@ -53,62 +49,56 @@ public class AuthController : ControllerBase
             Role = role
         };
 
-        var createdUser =
-            await _userService.RegisterAsync(user);
+        var createdUser = await _userService.RegisterAsync(user);
 
-        var response = new UserResponseDto
+        return Ok(new UserResponseDto
         {
             Id = createdUser.Id,
             Name = createdUser.Name,
             Email = createdUser.Email,
             Phone = createdUser.Phone,
             Role = createdUser.Role.ToString()
-        };
-
-        return Ok(response);
+        });
     }
 
+
+    // Login
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        var user =
-            await _userService.GetByEmailAsync(dto.Email);
+        var user = await _userService.GetByEmailAsync(dto.Email);
 
         if (user == null)
             return Unauthorized("Invalid email or password.");
 
-        bool passwordValid =
-            BCrypt.Net.BCrypt.Verify(
-                dto.Password,
-                user.PasswordHash);
-
-        if (!passwordValid)
+        if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized("Invalid email or password.");
 
         var token = _jwtService.GenerateToken(user);
-
-        var response = new UserResponseDto
-        {
-            Id = user.Id,
-            Name = user.Name,
-            Email = user.Email,
-            Phone = user.Phone,
-            Role = user.Role.ToString()
-        };
 
         return Ok(new
         {
             message = "Login successful.",
             token,
-            user = response
+            user = new UserResponseDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Phone = user.Phone,
+                Role = user.Role.ToString()
+            }
         });
     }
 
+
+    // Register Employee
     [HttpPost("register-employee")]
     public async Task<IActionResult> RegisterEmployee(RegisterEmployeeDto dto)
     {
-        var existingUser = await _userService.GetByEmailAsync(dto.Email);
-        if (existingUser != null)
+        var userExists = await _userService.GetByEmailAsync(dto.Email);
+
+        if (userExists != null)
             return BadRequest("Email already registered.");
 
         var user = new User
@@ -136,28 +126,29 @@ public class AuthController : ControllerBase
 
         await _employeeService.AddAsync(employee);
 
-        var response = new UserResponseDto
+        return Ok(new UserResponseDto
         {
             Id = createdUser.Id,
             Name = createdUser.Name,
             Email = createdUser.Email,
             Phone = createdUser.Phone,
             Role = createdUser.Role.ToString()
-        };
-
-        return Ok(response);
+        });
     }
 
-    [HttpGet("me")]
+
+    // Get Logged-in User
+    [HttpGet("my-profile")]
     [Authorize]
-    public async Task<IActionResult> GetMe()
+    public async Task<IActionResult> GetMyProfile()
     {
-        var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-            return Unauthorized("User identity not found.");
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var user = await _userService.GetByIdAsync(userId);
-        if (user == null) return NotFound("User not found.");
+
+        if (user == null)
+            return NotFound("User not found.");
 
         return Ok(new UserResponseDto
         {
@@ -169,16 +160,19 @@ public class AuthController : ControllerBase
         });
     }
 
+
+    // Update Logged-in User
     [HttpPut("me")]
     [Authorize]
     public async Task<IActionResult> UpdateMe(UserUpdateProfileDto dto)
     {
-        var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-            return Unauthorized("User identity not found.");
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var user = await _userService.GetByIdAsync(userId);
-        if (user == null) return NotFound("User not found.");
+
+        if (user == null)
+            return NotFound("User not found.");
 
         user.Name = dto.Name;
         user.Phone = dto.Phone;

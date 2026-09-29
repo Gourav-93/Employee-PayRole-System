@@ -3,11 +3,12 @@ using EmployeeManagementPayrollSystem.Models;
 using EmployeeManagementPayrollSystem.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EmployeeManagementPayrollSystem.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/employee")]
 public class EmployeeController : ControllerBase
 {
     private readonly IEmployeeService _service;
@@ -17,14 +18,16 @@ public class EmployeeController : ControllerBase
         _service = service;
     }
 
+    // Get all employees
     [HttpGet]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetAll()
     {
-        var employees = await _service.GetAllAsync();
-        return Ok(employees);
+        return Ok(await _service.GetAllAsync());
     }
 
+
+    // Get employee by ID
     [HttpGet("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> GetById(int id)
@@ -37,15 +40,14 @@ public class EmployeeController : ControllerBase
         return Ok(employee);
     }
 
-    [HttpGet("me")]
+
+    // Get logged-in employee profile
+    [HttpGet("my-profile")]
     [Authorize]
     public async Task<IActionResult> GetMyProfile()
     {
-        var userIdString = User.FindFirst(
-            System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-            return Unauthorized("User identity not found.");
+        var userId = int.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var employee = await _service.GetByUserIdAsync(userId);
 
@@ -55,6 +57,8 @@ public class EmployeeController : ControllerBase
         return Ok(employee);
     }
 
+
+    // Create employee
     [HttpPost]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Create(EmployeeCreateDto dto)
@@ -72,44 +76,41 @@ public class EmployeeController : ControllerBase
             JoiningDate = dto.JoiningDate
         };
 
-        var createdEmployee = await _service.AddAsync(employee);
-
-        return Ok(createdEmployee);
+        return Ok(await _service.AddAsync(employee));
     }
 
+
+    // Update employee
     [HttpPut("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Update(
         int id,
         EmployeeUpdateDto dto)
     {
-        var existingEmployee = await _service.GetByIdAsync(id);
+        var employee = await _service.GetByIdAsync(id);
 
-        if (existingEmployee == null)
+        if (employee == null)
             return NotFound("Employee not found.");
 
-        existingEmployee.DepartmentId = dto.DepartmentId;
-        existingEmployee.EmployeeCode = dto.EmployeeCode;
-        existingEmployee.Name = dto.Name;
-        existingEmployee.Email = dto.Email;
-        existingEmployee.Phone = dto.Phone;
-        existingEmployee.Designation = dto.Designation;
-        existingEmployee.BasicSalary = dto.BasicSalary;
-        existingEmployee.JoiningDate = dto.JoiningDate;
+        employee.DepartmentId = dto.DepartmentId;
+        employee.EmployeeCode = dto.EmployeeCode;
+        employee.Name = dto.Name;
+        employee.Email = dto.Email;
+        employee.Phone = dto.Phone;
+        employee.Designation = dto.Designation;
+        employee.BasicSalary = dto.BasicSalary;
+        employee.JoiningDate = dto.JoiningDate;
 
-        var updatedEmployee =
-            await _service.UpdateAsync(existingEmployee);
-
-        return Ok(updatedEmployee);
+        return Ok(await _service.UpdateAsync(employee));
     }
 
+
+    // Delete employee
     [HttpDelete("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
     public async Task<IActionResult> Delete(int id)
     {
-        var deleted = await _service.DeleteAsync(id);
-
-        if (!deleted)
+        if (!await _service.DeleteAsync(id))
             return NotFound("Employee not found.");
 
         return Ok("Employee deleted successfully.");

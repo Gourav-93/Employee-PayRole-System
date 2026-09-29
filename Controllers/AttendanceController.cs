@@ -109,12 +109,6 @@ public class AttendanceController : ControllerBase
         attendance.Remarks = dto.Remarks;
         attendance.Status = status;
 
-        if (dto.WorkingHours.HasValue)
-            attendance.WorkingHours = dto.WorkingHours;
-        else if (dto.CheckIn.HasValue && dto.CheckOut.HasValue)
-            attendance.WorkingHours = Math.Round(
-                (dto.CheckOut.Value - dto.CheckIn.Value).TotalHours, 2);
-
         return Ok(await _service.UpdateAsync(attendance));
     }
 
@@ -134,19 +128,15 @@ public class AttendanceController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetTodayAttendance()
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-            return Unauthorized("User identity not found.");
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
 
-        var attendance = await _service.GetByEmployeeAndDateAsync(employee.Id, DateTime.Today);
-
-        if (attendance == null)
-            return Ok(null); // Return empty so frontend knows it's not marked
+        var attendance = await _service.GetByEmployeeAndDateAsync(
+            employee.Id, DateTime.Today);
 
         return Ok(attendance);
     }
@@ -155,25 +145,24 @@ public class AttendanceController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CheckIn()
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-            return Unauthorized("User identity not found.");
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
 
-        var existing = await _service.GetByEmployeeAndDateAsync(employee.Id, DateTime.Today);
+        var existing = await _service.GetByEmployeeAndDateAsync(
+            employee.Id, DateTime.Today);
+
         if (existing != null)
-            return BadRequest(new { message = "Attendance already marked for today." });
+            return BadRequest("Attendance already marked for today.");
 
         var attendance = new Attendance
         {
             EmployeeId = employee.Id,
             Date = DateTime.Today,
             CheckIn = DateTime.Now.TimeOfDay,
-            CheckOut = null,
             Status = AttendanceStatus.Present
         };
 
@@ -184,28 +173,30 @@ public class AttendanceController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CheckOut()
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-            return Unauthorized("User identity not found.");
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
 
-        var existing = await _service.GetByEmployeeAndDateAsync(employee.Id, DateTime.Today);
-        if (existing == null)
-            return BadRequest(new { message = "Please check in first." });
+        var attendance = await _service.GetByEmployeeAndDateAsync(
+            employee.Id, DateTime.Today);
 
-        if (existing.CheckOut != null)
-            return BadRequest(new { message = "Attendance already checked out." });
+        if (attendance == null)
+            return BadRequest("Please check in first.");
 
-        existing.CheckOut = DateTime.Now.TimeOfDay;
-        if (existing.CheckIn.HasValue)
+        if (attendance.CheckOut != null)
+            return BadRequest("Attendance already checked out.");
+
+        attendance.CheckOut = DateTime.Now.TimeOfDay;
+
+        if (attendance.CheckIn.HasValue)
         {
-            existing.WorkingHours = Math.Round((existing.CheckOut.Value - existing.CheckIn.Value).TotalHours, 2);
+            attendance.WorkingHours = Math.Round(
+                (attendance.CheckOut.Value - attendance.CheckIn.Value).TotalHours, 2);
         }
 
-        return Ok(await _service.UpdateAsync(existing));
+        return Ok(await _service.UpdateAsync(attendance));
     }
 }
