@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EmployeeManagementPayrollSystem.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/attendance")]
 public class AttendanceController : ControllerBase
 {
     private readonly IAttendanceService _service;
@@ -46,17 +46,14 @@ public class AttendanceController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetMyAttendance()
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var userId))
-            return Unauthorized("User identity not found.");
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var employee = await _employeeService.GetByUserIdAsync(userId);
 
         if (employee == null)
             return NotFound("Employee profile not found.");
 
-        var attendance = await _service
-            .GetByEmployeeIdAsync(employee.Id);
+        var attendance = await _service.GetByEmployeeIdAsync(employee.Id);
 
         return Ok(attendance);
     }
@@ -96,37 +93,29 @@ public class AttendanceController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "ADMIN,HR")]
-    public async Task<IActionResult> Update(
-        int id,
-        AttendanceUpdateDto dto)
+    public async Task<IActionResult> Update(int id, AttendanceUpdateDto dto)
     {
-        var existing = await _service.GetByIdAsync(id);
+        var attendance = await _service.GetByIdAsync(id);
 
-        if (existing == null)
+        if (attendance == null)
             return NotFound("Attendance record not found.");
 
-        if (!Enum.TryParse<AttendanceStatus>(
-            dto.Status,
-            true,
-            out var status))
-        {
+        if (!Enum.TryParse(dto.Status, true, out AttendanceStatus status))
             return BadRequest("Invalid attendance status.");
-        }
 
-        double? workingHours = dto.WorkingHours;
-        if (!workingHours.HasValue && dto.CheckIn.HasValue && dto.CheckOut.HasValue)
-        {
-            workingHours = (dto.CheckOut.Value - dto.CheckIn.Value).TotalHours;
-        }
+        attendance.Date = dto.Date;
+        attendance.CheckIn = dto.CheckIn;
+        attendance.CheckOut = dto.CheckOut;
+        attendance.Remarks = dto.Remarks;
+        attendance.Status = status;
 
-        existing.Date = dto.Date;
-        existing.CheckIn = dto.CheckIn;
-        existing.CheckOut = dto.CheckOut;
-        existing.WorkingHours = Math.Round(workingHours ?? 0, 2) > 0 ? Math.Round(workingHours ?? 0, 2) : null;
-        existing.Remarks = dto.Remarks;
-        existing.Status = status;
+        if (dto.WorkingHours.HasValue)
+            attendance.WorkingHours = dto.WorkingHours;
+        else if (dto.CheckIn.HasValue && dto.CheckOut.HasValue)
+            attendance.WorkingHours = Math.Round(
+                (dto.CheckOut.Value - dto.CheckIn.Value).TotalHours, 2);
 
-        return Ok(await _service.UpdateAsync(existing));
+        return Ok(await _service.UpdateAsync(attendance));
     }
 
     [HttpDelete("{id}")]
