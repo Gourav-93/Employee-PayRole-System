@@ -1,4 +1,9 @@
 # Employee Management Payroll System
+## Project Update
+
+- Reviewed project structure and existing APIs.
+- Checked backend modules and database integration.
+- Verified the current project setup.
 
 A backend-based **Employee Management and Payroll System** developed using **ASP.NET Core Web API, Entity Framework Core, MySQL, and JWT Authentication**.
 
