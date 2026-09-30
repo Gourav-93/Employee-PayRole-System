@@ -456,6 +456,19 @@ Authorization: Bearer <token>
 
 ---
 
+## API Endpoints
+
+### Authentication
+- POST /api/auth/register
+- POST /api/auth/login
+
+### Employee
+- GET /api/employee
+- GET /api/employee/{id}
+- POST /api/employee
+- PUT /api/employee/{id}
+- DELETE /api/employee/{id}
+
 # 🛡️ Authorization
 
 Authorization controls which users are allowed to access particular operations.
