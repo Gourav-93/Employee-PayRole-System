@@ -189,7 +189,7 @@ public class AttendanceController : ControllerBase
 
         if (attendance == null)
             return BadRequest("Please check in first.");
-
+            
         if (attendance.CheckOut != null)
             return BadRequest("Attendance already checked out.");
 
