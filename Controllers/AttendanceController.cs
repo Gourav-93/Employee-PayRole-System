@@ -29,7 +29,7 @@ public class AttendanceController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         return Ok(await _service.GetAllAsync());
-    }
+    }   
 
     // Get attendance by ID
     [HttpGet("{id}")]

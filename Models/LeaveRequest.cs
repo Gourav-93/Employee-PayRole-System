@@ -16,6 +16,5 @@ public class LeaveRequest
 
     public LeaveStatus Status { get; set; } = LeaveStatus.Pending;
 
-    // Relationship
     public Employee Employee { get; set; } = null!;
 }

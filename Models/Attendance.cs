@@ -17,7 +17,6 @@ public class Attendance
     public string? Remarks { get; set; }
 
     public AttendanceStatus Status { get; set; } = AttendanceStatus.Present;
-
-    // Relationship
+    
     public Employee Employee { get; set; } = null!;
 }
